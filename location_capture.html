@@ -1,35 +1,118 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Location Submit</title>
-    <meta charset="utf-8" />
-    <script>
-      function sendLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((position) => {
-            const payload = {
-              name: prompt("Enter your name"),
-              lat: position.coords.latitude,
-              lon: position.coords.longitude
-            };
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Location Capture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-            fetch('https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec', {
-              method: 'POST',
-              body: JSON.stringify(payload)
-            })
-            .then(res => res.text())
-            .then(data => alert("Location submitted!"))
-            .catch(err => console.error(err));
-          });
-        } else {
-          alert("Geolocation is not supported.");
-        }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    h1 {
+      color: #00796b;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #00796b;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    .message {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Confirm Your Location</h1>
+    <input type="text" id="firstName" placeholder="First Name" required />
+    <input type="text" id="lastName" placeholder="Last Name" required />
+    <input type="email" id="email" placeholder="Email Address" required />
+    <button onclick="sendLocation()">Submit</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    function sendLocation() {
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      if (!firstName || !lastName || !email) {
+        alert("Please fill in all fields.");
+        return;
       }
 
-      window.onload = sendLocation;
-    </script>
-  </head>
-  <body>
-    <h2>Capturing Your Location...</h2>
-  </body>
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const payload = {
+            name: firstName + " " + lastName,
+            email: email,
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          };
+
+          fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          })
+          .then(res => res.text())
+          .then(data => {
+            document.getElementById("message").innerText = "Location submitted successfully!";
+            setTimeout(() => {
+              window.location.href = "https://forms.office.com/r/65c0JVakhX";
+            }, 2000);
+          })
+          .catch(err => {
+            alert("Submission failed. Please try again later.");
+            console.error(err);
+          });
+        }, () => {
+          alert("Location access denied. Please enable it in your browser.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+  </script>
+</body>
 </html>

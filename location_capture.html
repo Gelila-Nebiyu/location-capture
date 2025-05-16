@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Verification</title>
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendLocation, showError);
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function sendLocation(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const name = document.getElementById("name").value;
+
+      if (!name) {
+        alert("Please enter your name before continuing.");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
+        method: "POST",
+        body: JSON.stringify({ name, lat, lon }),
+        headers: { "Content-Type": "application/json" }
+      }).then(() => {
+        window.location.href = "https://forms.office.com/your-form-link";
+      }).catch((err) => {
+        alert("Error sending location data.");
+        console.error(err);
+      });
+    }
+
+    function showError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          alert("User denied the request for Geolocation.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Location information is unavailable.");
+          break;
+        case error.TIMEOUT:
+          alert("The request to get user location timed out.");
+          break;
+        case error.UNKNOWN_ERROR:
+          alert("An unknown error occurred.");
+          break;
+      }
+    }
+  </script>
+</head>
+<body>
+  <h2>Verify Your Location Before Submitting the Form</h2>
+  <p>Please enter your name and click continue:</p>
+  <input type="text" id="name" placeholder="Enter your name" required />
+  <button onclick="getLocation()">Continue to the Form</button>
+</body>
+</html>

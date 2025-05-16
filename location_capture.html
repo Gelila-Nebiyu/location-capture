@@ -1,61 +1,35 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Location Verification</title>
-  <script>
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(sendLocation, showError);
-      } else {
-        alert("Geolocation is not supported by this browser.");
+  <head>
+    <title>Location Submit</title>
+    <meta charset="utf-8" />
+    <script>
+      function sendLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const payload = {
+              name: prompt("Enter your name"),
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            };
+
+            fetch('https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec', {
+              method: 'POST',
+              body: JSON.stringify(payload)
+            })
+            .then(res => res.text())
+            .then(data => alert("Location submitted!"))
+            .catch(err => console.error(err));
+          });
+        } else {
+          alert("Geolocation is not supported.");
+        }
       }
-    }
 
-    function sendLocation(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      const name = document.getElementById("name").value;
-
-      if (!name) {
-        alert("Please enter your name before continuing.");
-        return;
-      }
-
-      fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
-        method: "POST",
-        body: JSON.stringify({ name, lat, lon }),
-        headers: { "Content-Type": "application/json" }
-      }).then(() => {
-        window.location.href = "https://forms.office.com/r/65c0JVakhX";
-      }).catch((err) => {
-        alert("Error sending location data.");
-        console.error(err);
-      });
-    }
-
-    function showError(error) {
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          alert("User denied the request for Geolocation.");
-          break;
-        case error.POSITION_UNAVAILABLE:
-          alert("Location information is unavailable.");
-          break;
-        case error.TIMEOUT:
-          alert("The request to get user location timed out.");
-          break;
-        case error.UNKNOWN_ERROR:
-          alert("An unknown error occurred.");
-          break;
-      }
-    }
-  </script>
-</head>
-<body>
-  <h2>Verify Your Location Before Submitting the Form</h2>
-  <p>Please enter your name and click continue:</p>
-  <input type="text" id="name" placeholder="Enter your name" required />
-  <button onclick="getLocation()">Continue to the Form</button>
-</body>
+      window.onload = sendLocation;
+    </script>
+  </head>
+  <body>
+    <h2>Capturing Your Location...</h2>
+  </body>
 </html>

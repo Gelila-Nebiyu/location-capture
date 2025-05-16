@@ -1,51 +1,52 @@
-
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Submitted Locations Map</title>
-    <meta charset="utf-8" />
-    <style>
-      #map {
-        height: 100vh;
-        width: 100%;
-      }
-    </style>
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-sA+4pskP1YhWQXgWmtAb5Jl0IL9kRZbtkYxmUpGOYXE="
-      crossorigin=""
-    />
-    <!-- Leaflet JS -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-o9N1j7kC8fjYxk28Iu058OYvF55gkX+qob+z3DawQ3s="
-      crossorigin=""
-    ></script>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script>
-      const map = L.map('map').setView([9.6, 41.866], 10); // Dire Dawa center
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submitted Locations Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
 
-      // Use OpenStreetMap tiles (free)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([9.6, 41.85], 6); // Centered around Dire Dawa
 
-      // Fetch location data from Google Apps Script
-      fetch('https://script.google.com/macros/s/19cQ0-AE9x7oxglxmrjezKkY8yiBrrU6zgnawdfDz90I/exec')
-        .then(response => response.json())
-        .then(data => {
-          data.forEach(loc => {
-            L.marker([loc.lat, loc.lon])
-              .addTo(map)
-              .bindPopup(`<b>${loc.name}</b><br>Lat: ${loc.lat}, Lon: ${loc.lon}`);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    fetch('https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec')
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          data.forEach(entry => {
+            if (entry.lat && entry.lon) {
+              L.marker([entry.lat, entry.lon])
+                .addTo(map)
+                .bindPopup(`<b>${entry.name}</b><br>${entry.email}`);
+            }
           });
-        })
-        .catch(error => console.error('Error loading map data:', error));
-    </script>
-  </body>
+        } else {
+          alert("Map data format invalid.");
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching location data:', error);
+        alert("Could not load map data.");
+      });
+  </script>
+</body>
 </html>

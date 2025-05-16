@@ -98,39 +98,55 @@
         return;
       }
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-          const payload = {
-            name: firstName + " " + lastName,
-            email: email,
-            lat: parseFloat(position.coords.latitude.toFixed(6)),
-            lon: parseFloat(position.coords.longitude.toFixed(6))
-          };
+      const messageEl = document.getElementById("message");
+      messageEl.innerText = "Submitting…";
 
-          fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
-            method: "POST",
-            body: JSON.stringify(payload)
-          })
-          .then(res => res.text())
-          .then(data => {
-            submitted = true;
-            document.getElementById("submitButton").disabled = true;
-            document.getElementById("message").innerText = "Location submitted successfully!";
-            setTimeout(() => {
-              window.location.href = "https://forms.office.com/r/65c0JVakhX";
-            }, 2000);
-          })
-          .catch(err => {
-            alert("Submission failed. Please try again later.");
-            console.error(err);
-          });
-        }, () => {
-          alert("Location access denied. Please enable it in your browser.");
-        }, {
-          enableHighAccuracy: true
-        });
+      if (navigator.geolocation) {
+        const geoTimeout = setTimeout(() => {
+          messageEl.innerText = "Location timed out. Try again.";
+        }, 7000);
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            clearTimeout(geoTimeout);
+
+            const payload = {
+              name: firstName + " " + lastName,
+              email: email,
+              lat: parseFloat(position.coords.latitude.toFixed(6)),
+              lon: parseFloat(position.coords.longitude.toFixed(6))
+            };
+
+            fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
+              method: "POST",
+              body: JSON.stringify(payload)
+            })
+            .then(res => res.text())
+            .then(data => {
+              submitted = true;
+              document.getElementById("submitButton").disabled = true;
+              messageEl.innerText = "Location submitted!";
+              setTimeout(() => {
+                window.location.href = "https://forms.office.com/r/65c0JVakhX";
+              }, 800);
+            })
+            .catch(err => {
+              messageEl.innerText = "Submission failed. Try again.";
+              console.error(err);
+            });
+          },
+          (err) => {
+            clearTimeout(geoTimeout);
+            messageEl.innerText = "Location access denied. Please allow access.";
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 7000,
+            maximumAge: 10000
+          }
+        );
       } else {
-        alert("Geolocation is not supported by this browser.");
+        messageEl.innerText = "Geolocation is not supported by this browser.";
       }
     }
   </script>

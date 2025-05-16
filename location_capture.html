@@ -21,7 +21,7 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 90%;
+      width: 100%;
       max-width: 400px;
       text-align: center;
     }
@@ -61,13 +61,8 @@
       width: 100%;
     }
 
-    button:hover:not(:disabled) {
+    button:hover {
       background-color: #004d40;
-    }
-
-    button:disabled {
-      background-color: #a5d6a7;
-      cursor: not-allowed;
     }
 
     .message {
@@ -83,14 +78,16 @@
       <input type="text" id="firstName" placeholder="First Name" required />
       <input type="text" id="lastName" placeholder="Last Name" required />
       <input type="email" id="email" placeholder="Email Address" required />
-      <button id="submitBtn" onclick="sendLocation()">Submit</button>
+      <button id="submitButton" onclick="sendLocation()">Submit</button>
     </div>
     <div class="message" id="message"></div>
   </div>
 
   <script>
+    let submitted = false;
+
     function sendLocation() {
-      const submitBtn = document.getElementById("submitBtn");
+      if (submitted) return;
 
       const firstName = document.getElementById("firstName").value.trim();
       const lastName = document.getElementById("lastName").value.trim();
@@ -101,47 +98,39 @@
         return;
       }
 
-      submitBtn.disabled = true;
-
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const payload = {
-              name: firstName + " " + lastName,
-              email: email,
-              lat: position.coords.latitude,
-              lon: position.coords.longitude,
-            };
+        navigator.geolocation.getCurrentPosition((position) => {
+          const payload = {
+            name: firstName + " " + lastName,
+            email: email,
+            lat: parseFloat(position.coords.latitude.toFixed(6)),
+            lon: parseFloat(position.coords.longitude.toFixed(6))
+          };
 
-            fetch(
-              "https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec",
-              {
-                method: "POST",
-                body: JSON.stringify(payload),
-              }
-            )
-              .then((res) => res.text())
-              .then((data) => {
-                document.getElementById("message").innerText =
-                  "Location submitted successfully!";
-                setTimeout(() => {
-                  window.location.href = "https://forms.office.com/r/65c0JVakhX";
-                }, 2000);
-              })
-              .catch((err) => {
-                alert("Submission failed. Please try again later.");
-                console.error(err);
-                submitBtn.disabled = false;
-              });
-          },
-          () => {
-            alert("Location access denied. Please enable it in your browser.");
-            submitBtn.disabled = false;
-          }
-        );
+          fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          })
+          .then(res => res.text())
+          .then(data => {
+            submitted = true;
+            document.getElementById("submitButton").disabled = true;
+            document.getElementById("message").innerText = "Location submitted successfully!";
+            setTimeout(() => {
+              window.location.href = "https://forms.office.com/r/65c0JVakhX";
+            }, 2000);
+          })
+          .catch(err => {
+            alert("Submission failed. Please try again later.");
+            console.error(err);
+          });
+        }, () => {
+          alert("Location access denied. Please enable it in your browser.");
+        }, {
+          enableHighAccuracy: true
+        });
       } else {
         alert("Geolocation is not supported by this browser.");
-        submitBtn.disabled = false;
       }
     }
   </script>

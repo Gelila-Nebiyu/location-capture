@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Submitted Locations Map</title>
+    <meta charset="utf-8" />
+    <style>
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-sA+4pskP1YhWQXgWmtAb5Jl0IL9kRZbtkYxmUpGOYXE="
+      crossorigin=""
+    />
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-o9N1j7kC8fjYxk28Iu058OYvF55gkX+qob+z3DawQ3s="
+      crossorigin=""
+    ></script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      const map = L.map('map').setView([9.6, 41.866], 10); // Dire Dawa center
+
+      // Use OpenStreetMap tiles (free)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      // Fetch location data from Google Apps Script
+      fetch('https://script.google.com/macros/s/19cQ0-AE9x7oxglxmrjezKkY8yiBrrU6zgnawdfDz90I/exec')
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(loc => {
+            L.marker([loc.lat, loc.lon])
+              .addTo(map)
+              .bindPopup(`<b>${loc.name}</b><br>Lat: ${loc.lat}, Lon: ${loc.lon}`);
+          });
+        })
+        .catch(error => console.error('Error loading map data:', error));
+    </script>
+  </body>
+</html>

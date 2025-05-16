@@ -22,7 +22,7 @@
         return;
       }
 
-      fetch("https://docs.google.com/spreadsheets/d/1cAQMtj78YOym93dKA0l_gpj0pbGdEDcN7ZanwvC_8Wo/edit?usp=sharing", {
+      fetch("https://script.google.com/macros/s/AKfycbz1VwctcMtEMfa2RUGhwUAiu-1iiSF8lthoGZPRstmrd-E4QDRWqXGavZ9KPqy6lMe-/exec", {
         method: "POST",
         body: JSON.stringify({ name, lat, lon }),
         headers: { "Content-Type": "application/json" }
